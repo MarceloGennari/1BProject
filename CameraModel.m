@@ -78,4 +78,3 @@ function [KMatrix] = CameraModel( ChipSize, FocalLength, EffectiveSize, Skewness
           
 
 end
-
