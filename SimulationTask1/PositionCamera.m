@@ -32,7 +32,7 @@ end
 CameraZ = CameraOrigin / Znorm;
 
 %Perturb the z-axis a bit so that we get different angles everytime
-CameraZ = CameraZ; %- 0.01*rand(3,1);
+CameraZ = CameraZ- 0.02*(rand(3,1)-[0.5; 0.5; 0.5]);
 CameraZ = CameraZ/norm(CameraZ); %And normalize it again
 
 %Create random x-Axis that is perpendicular to Z
