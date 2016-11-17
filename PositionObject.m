@@ -8,7 +8,7 @@ function [ T ] = PositionObject()
 R = RandomRotationMatrix();
 
 %Generates Random Position Vector at most sqrt(3) units away.
-PositionVector = rand(3,1);
+PositionVector = 1000*rand(3,1);
 PositionVector = PositionVector / norm(PositionVector);
 
 % Returns 4D Transform Matrix
