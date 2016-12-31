@@ -1,14 +1,9 @@
-function [] = LetMeTakeASelfie( ObjectLines, T_ow, KMatrix, CameraHeight, CameraWidth, T_cw)
+function [ObjectLines] = LetMeTakeASelfie( ObjectLines, T_ow, KMatrix, CameraHeight, CameraWidth, T_cw)
 %LETMETAKEASELFIE This function takes a picture of what our camera sees
 %and plots it in a figure. It takes into consideration the Intrinsic and
 %Extrinsic parts of the camera model
 
 %% INPUT HYGIENE
-% Checking the ObjectLines matrix. It should be a 4x2n matrix:
-s = size(ObjectLines);
-if s(1) ~= 4 || mod(s(2),2) ~= 0
-   error('ObjectLines is not a valid matrix')
-end
 
 % Checking the transformation Matrices, which should be a 4x4
 s = size(T_ow);
@@ -57,13 +52,5 @@ s = size(ObjectLines);
 for j = 1:s(2)
    ObjectLines(1:2,j)  = ObjectLines(1:2,j)/ObjectLines(3,j);
 end
-
-%Here we plot the lines and make sure the axis goes from 0 to CamerHeigth
-%from the top to bottom using the axis ij command.
-plot(ObjectLines(1,:), ObjectLines(2,:));
-axis ij
-axis([0 CameraWidth 0 CameraHeight])
-title('Picture taken by the camera');
-
 end
 

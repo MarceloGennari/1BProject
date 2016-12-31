@@ -32,7 +32,6 @@ Cube = [Cube; ones(1,length(Cube(1,:)))];
 %% Position Camera in Space
 T_cw = PositionCamera(T_ow);
 
-
 %% Taking a selfie
 LetMeTakeASelfie(Cube,T_ow,KMatrix,CameraHeight,CameraWidth,T_cw);
 
