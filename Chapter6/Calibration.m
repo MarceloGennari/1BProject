@@ -40,9 +40,7 @@ GridPointsPhoto = LetMeTakeASelfie(GridW,T_ow,KMatrix,CameraHeight,CameraWidth,T
 
 H = A\P;
 
-Homog = [H(1,1) H(2,1) H(3,1)
-         H(4,1) H(5,1) H(6,1)
-         H(7,1) H(8,1) 1];
+Homog = ConstructHomography(H);
 
 EquivGrid = [EquivalentGrid(1,:);EquivalentGrid(2,:);EquivalentGrid(4,:)];
 
@@ -50,18 +48,16 @@ EquivGrid = [EquivalentGrid(1,:);EquivalentGrid(2,:);EquivalentGrid(4,:)];
 
 
 %Build some noise
-[NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,0.01);
+[NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,10);
 
 %Calculate first attempt Homog Noisy Measurement using least square
-%solution
-[A P] = AMatrix(40,NoisyPointsInImage,NoisyEquivGrid);
+%solution. I am using all of the points to make sure we get a good estimate
+[A P] = AMatrix(length(NoisyPointsInImage(1,:)),NoisyPointsInImage,NoisyEquivGrid);
 
-H = (A'*A)\A'*P;
+H = LeastSquareSolve(A,P);
 
-HomogNoisy = [H(1,1) H(2,1) H(3,1)
-         H(4,1) H(5,1) H(6,1)
-         H(7,1) H(8,1) 1];
-     
+HomogNoisy = ConstructHomography(H);
+
 MatrixDiff = HomogNoisy-Homog;
 
 NewPoints = HomogNoisy*EquivGrid;
