@@ -14,32 +14,15 @@ while InsideImage ==1;
     % Tests whether all four points are inside the picture frame or not. If it is, it sets Inside Image 
     %to 1 and the loop runs again, until all the corners are outside the frame and consequently the grid 
     %filled the image 
-    if GridCornersPhoto(1,1) < CameraWidth && GridCornersPhoto(1,1) > 0
-        InsideImage = 1;
-    end
-    if GridCornersPhoto(1,2) < CameraWidth && GridCornersPhoto(1,2) > 0
-        InsideImage = 1;
-    end
-    if GridCornersPhoto(1,3) < CameraWidth && GridCornersPhoto(1,3) > 0
-        InsideImage = 1;
-    end
-    if GridCornersPhoto(1,4) < CameraWidth && GridCornersPhoto(1,4) > 0
-        InsideImage = 1;
-    end
     
-    if GridCornersPhoto(2,1) < CameraHeight && GridCornersPhoto(2,1) > 0
-        InsideImage = 1;
+    for j =1:4
+        if GridCornersPhoto(1,j) < CameraWidth && GridCornersPhoto(1,j) > 0
+            InsideImage = 1;
+        end
+        if GridCornersPhoto(2,j) < CameraHeight && GridCornersPhoto(2,j) > 0
+            InsideImage = 1;
+        end
     end
-    if GridCornersPhoto(2,2) < CameraHeight && GridCornersPhoto(2,2) > 0
-        InsideImage = 1;
-    end
-     if GridCornersPhoto(2,3) < CameraHeight && GridCornersPhoto(2,3) > 0
-        InsideImage = 1;
-     end
-    if GridCornersPhoto(2,4) < CameraHeight && GridCornersPhoto(2,4) > 0
-        InsideImage = 1;
-    end
-    
   
     %If at least one of the corners are inside the picture, then we shrink
     %the distance from the camera to the object / grid
