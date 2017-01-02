@@ -5,6 +5,9 @@
 %4. Position Camera randomly so that the grid fills the Image
 %5. Building Phi and getting Homography without noise (NOT WORKING< REDO)
 %6. Build some noise in the (u,v) coordinates
+%7. Add some outliers
+%8. Find Best Estimation Homography using RANSAC approach (NOT WORKING
+%PROPERLY) REVIEW
 %last. plot everything for analysis / validation
 
 %% 1. Camera
@@ -37,36 +40,37 @@ GridPointsPhoto = LetMeTakeASelfie(GridW,T_ow,KMatrix,CameraHeight,CameraWidth,T
 
 %% 5. Building Phi Matrices and getting Homography without noise
 [A P] = AMatrix(8,GridPointsInPhoto,EquivalentGrid);
-
 H = A\P;
-
 Homog = ConstructHomography(H);
-
 EquivGrid = [EquivalentGrid(1,:);EquivalentGrid(2,:);EquivalentGrid(4,:)];
 
 %% 6. Build some noise in the (u,v) and (x,y) coordinates
-
-
 %Build some noise
-[NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,10);
+[NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,2);
 
 %Calculate first attempt Homog Noisy Measurement using least square
 %solution. I am using all of the points to make sure we get a good estimate
-[A P] = AMatrix(length(NoisyPointsInImage(1,:)),NoisyPointsInImage,NoisyEquivGrid);
 
-H = LeastSquareSolve(A,P);
-
-HomogNoisy = ConstructHomography(H);
-
-MatrixDiff = HomogNoisy-Homog;
-
+HomogNoisy = GetHomographyLSM(NoisyPointsInImage,NoisyEquivGrid);
 NewPoints = HomogNoisy*EquivGrid;
 
 s = size(NewPoints);
 for j = 1:s(2)
    NewPoints(1:2,j)  = NewPoints(1:2,j)/NewPoints(3,j);
 end
-modError = det(MatrixDiff^2);
+NoisyEquivGrid = [NoisyEquivGrid; ones(1,length(NoisyEquivGrid(1,:)))];
+
+%% 7. Add some outliers
+FinalPointsInImage = ImplOutlier(NoisyPointsInImage,0.05,CameraWidth,CameraHeight);
+
+%% 8. Find Best Estimation Homography using RANSAC approach
+[Homog BestConsensus] = RansacEstimation(FinalPointsInImage, EquivGrid, 1, 100);
+
+FinalPoints = Homog*EquivGrid;
+s = size(FinalPoints);
+for j = 1:s(2)
+   FinalPoints(1:2,j)  = FinalPoints(1:2,j)/FinalPoints(3,j);
+end
 
 %% LAST. Plot everything in world coordinates and in camera view
 %Here we plot the Picture and make sure the axis goes from 0 to CamerHeigth
@@ -80,5 +84,5 @@ title('Picture taken by the camera');
 figure
 plot3(GridW(1,:),GridW(2,:),GridW(3,:),'r.');
 hold on
-plot3(GridCornersW(1,:),GridCornersW(2,:),GridCornersW(3,:),'b.','markers',15);
+plot3(GridCornersW(1,:),GridCornersW(2,:),GridCornersW(3,:),'b.','markers',1);
 PlottingCamera(T_cw);

@@ -28,7 +28,6 @@ while InsideImage ==1;
     %the distance from the camera to the object / grid
     if InsideImage == 1
         CameraDistance = CameraDistance - 10;
-        fprintf('%f mm\n',CameraDistance);
     end
 end
 
