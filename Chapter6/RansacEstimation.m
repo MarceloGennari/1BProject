@@ -68,28 +68,32 @@ for j = 1:n
     
     Consensus(j) = Consensus(j)/length(MatrixDiff(1,:));
     
-    %clf
-    %figure
-    %hold on
-    %plot(PointsInImage(1,:),PointsInImage(2,:),'r.')
-    %plot(FourPoints(1,:),FourPoints(2,:),'b.','markers',15)
-    %plot(Estimation(1,:),Estimation(2,:),'g.','markers',14)
-    %axis([0 500 0 500]);
 end
 
-BestConsensus = min(Consensus);
-Index = find(Consensus==BestConsensus);
+%Now we are going to get the set of errors that are less than or equal to
+%the one given in the function and use the points corresponding to those
+%errors to find the least square estimate of the matrix
+BestConsensus = [];
+for i = 1:length(Consensus)
+    if Consensus(i) < MaxError
+        BestConsensus = [BestConsensus Consensus(i)];
+    end
+end
 
-%Gets four points of best consensus
-FourPoints = [PointsInImage(:,RandomPoints(1,Index))];
-for i=2:4
-   FourPoints = [FourPoints PointsInImage(:,RandomPoints(i,Index))];
+% Now that we have a set of errors, we are going to find the indeces of
+% those errors in our matrix
+for i = 1:length(BestConsensus)
+    Index(i) = find(Consensus==BestConsensus(i));
 end
 
 %Gets four equivalent points of the best consensus
-FourEquivPoints = [EquivGrid(:,RandomPoints(1,Index))];
-for i=2:4
-    FourEquivPoints = [FourEquivPoints EquivGrid(:,RandomPoints(i,Index))];
+FourPoints = [];
+FourEquivPoints = [];
+for k = 1:length(Index)
+    for i=1:4
+       FourPoints = [FourPoints PointsInImage(:,RandomPoints(i,Index(k)))];
+       FourEquivPoints = [FourEquivPoints EquivGrid(:,RandomPoints(i,Index(k)))];
+    end
 end
     
 Homog = GetHomographyLSM(FourPoints, FourEquivPoints);

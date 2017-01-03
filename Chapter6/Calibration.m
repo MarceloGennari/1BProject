@@ -41,12 +41,12 @@ GridPointsPhoto = LetMeTakeASelfie(GridW,T_ow,KMatrix,CameraHeight,CameraWidth,T
 %% 5. Building Phi Matrices and getting Homography without noise
 [A P] = AMatrix(8,GridPointsInPhoto,EquivalentGrid);
 H = A\P;
-Homog = ConstructHomography(H);
+HomographyCorrect = ConstructHomography(H);
 EquivGrid = [EquivalentGrid(1,:);EquivalentGrid(2,:);EquivalentGrid(4,:)];
 
 %% 6. Build some noise in the (u,v) and (x,y) coordinates
 %Build some noise
-[NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,2);
+[NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,5);
 
 %Calculate first attempt Homog Noisy Measurement using least square
 %solution. I am using all of the points to make sure we get a good estimate
@@ -64,7 +64,7 @@ NoisyEquivGrid = [NoisyEquivGrid; ones(1,length(NoisyEquivGrid(1,:)))];
 FinalPointsInImage = ImplOutlier(NoisyPointsInImage,0.05,CameraWidth,CameraHeight);
 
 %% 8. Find Best Estimation Homography using RANSAC approach
-[Homog BestConsensus] = RansacEstimation(FinalPointsInImage, EquivGrid, 1, 100);
+[Homog BestConsensus] = RansacEstimation(FinalPointsInImage, EquivGrid, 20, 2000);
 
 FinalPoints = Homog*EquivGrid;
 s = size(FinalPoints);
@@ -79,6 +79,7 @@ plot(GridPointsInPhoto(1,:), GridPointsInPhoto(2,:),'r.');
 hold on
 axis ij
 title('Picture taken by the camera');
+axis([0 CameraWidth 0 CameraHeight])
 
 %plot in world reference frame
 figure
