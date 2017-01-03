@@ -1,4 +1,4 @@
-function [ T_cw ] = FillImage( T_wg, KMatrix, CameraHeight, CameraWidth, GridCornersW,GridSize)
+function [ T_cw ] = FillImage( T_ow, KMatrix, CameraHeight, CameraWidth, GridCorners,GridSize)
 %FILLIMAGE Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -8,8 +8,8 @@ while InsideImage ==1;
     InsideImage = 0;
     
     %Create Transformation matrix from camera reference to world reference
-    T_cw = PositionCamera(T_wg,CameraDistance);
-    GridCornersPhoto = LetMeTakeASelfie(GridCornersW, T_wg, KMatrix, CameraHeight, CameraWidth, T_cw);
+    T_cw = PositionCamera(T_ow,CameraDistance);
+    GridCornersPhoto = LetMeTakeASelfie(GridCorners, T_ow, KMatrix, T_cw);
     
     % Tests whether all four points are inside the picture frame or not. If it is, it sets Inside Image 
     %to 1 and the loop runs again, until all the corners are outside the frame and consequently the grid 

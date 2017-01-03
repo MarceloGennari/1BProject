@@ -1,4 +1,4 @@
-function [ObjectLines] = LetMeTakeASelfie( ObjectLines, T_ow, KMatrix, CameraHeight, CameraWidth, T_cw)
+function [ObjectLines] = LetMeTakeASelfie( ObjectLines, T_ow, KMatrix, T_cw)
 %LETMETAKEASELFIE This function takes a picture of what our camera sees
 %and plots it in a figure. It takes into consideration the Intrinsic and
 %Extrinsic parts of the camera model

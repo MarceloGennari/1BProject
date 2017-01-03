@@ -31,14 +31,14 @@ GridCornersW = T_ow*GridCorners;
 
 %% 4. Position Camera
 %Create Transformation matrix from camera reference to world reference
-T_cw = FillImage(T_ow,KMatrix,CameraHeight,CameraWidth,GridCornersW,GridSize);
+T_cw = FillImage(T_ow,KMatrix,CameraHeight,CameraWidth,GridCorners,GridSize);
 
 %Takes a picture
-GridPointsPhoto = LetMeTakeASelfie(GridW,T_ow,KMatrix,CameraHeight,CameraWidth,T_cw);
+GridPointsPhoto = LetMeTakeASelfie(Grid,T_ow,KMatrix,T_cw);
 [GridPointsInPhoto EquivalentGrid]= TrimPicture(GridPointsPhoto,Grid,CameraWidth,CameraHeight);
 
 %% 5. Building Phi Matrices and getting Homography without noise
-[A P] = AMatrix(8,GridPointsInPhoto,EquivalentGrid);
+[A P] = AMatrix(length(GridPointsInPhoto(1,:)),GridPointsInPhoto,EquivalentGrid);
 H = A\P;
 HomographyCorrect = ConstructHomography(H);
 EquivGrid = [EquivalentGrid(1,:);EquivalentGrid(2,:);EquivalentGrid(4,:)];
@@ -48,8 +48,6 @@ EquivGrid = [EquivalentGrid(1,:);EquivalentGrid(2,:);EquivalentGrid(4,:)];
 [NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,5);
 
 %Calculate first attempt Homog Noisy Measurement using least square
-%solution. I am using all of the points to make sure we get a good estimate
-
 HomogNoisy = GetHomographyLSM(NoisyPointsInImage,NoisyEquivGrid);
 NewPoints = HomogNoisy*EquivGrid;
 
@@ -60,10 +58,11 @@ end
 NoisyEquivGrid = [NoisyEquivGrid; ones(1,length(NoisyEquivGrid(1,:)))];
 
 %% 7. Add some outliers
+%This code adds some outliers in the (u,v) coordinates.
 FinalPointsInImage = ImplOutlier(NoisyPointsInImage,0.05,CameraWidth,CameraHeight);
 
 %% 8. Find Best Estimation Homography using RANSAC approach
-[Homog BestConsensus] = RansacEstimation2(FinalPointsInImage, EquivGrid, 5, 2000);
+[Homog BestConsensus] = RansacEstimation2(FinalPointsInImage, EquivGrid, 2, 2000);
 
 FinalPoints = Homog*EquivGrid;
 s = size(FinalPoints);
