@@ -6,8 +6,7 @@
 %5. Building Phi and getting Homography without noise (NOT WORKING< REDO)
 %6. Build some noise in the (u,v) coordinates
 %7. Add some outliers
-%8. Find Best Estimation Homography using RANSAC approach (NOT WORKING
-%PROPERLY) REVIEW
+%8. Find Best Estimation Homography using RANSAC approach
 %last. plot everything for analysis / validation
 
 %% 1. Camera
@@ -64,7 +63,7 @@ NoisyEquivGrid = [NoisyEquivGrid; ones(1,length(NoisyEquivGrid(1,:)))];
 FinalPointsInImage = ImplOutlier(NoisyPointsInImage,0.05,CameraWidth,CameraHeight);
 
 %% 8. Find Best Estimation Homography using RANSAC approach
-[Homog BestConsensus] = RansacEstimation(FinalPointsInImage, EquivGrid, 20, 2000);
+[Homog BestConsensus] = RansacEstimation2(FinalPointsInImage, EquivGrid, 5, 2000);
 
 FinalPoints = Homog*EquivGrid;
 s = size(FinalPoints);
