@@ -46,13 +46,13 @@ for i = 1:NumberImages
    EquivGrid = [EquivalentGrid(1,:); EquivalentGrid(2,:); EquivalentGrid(4,:)];
    
    %3.2. Build some noise
-   [NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,1);
+   [NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,3);
 
    %3.3. Add some outliers
    FinalPointsInImage = ImplOutlier(NoisyPointsInImage,0.05,CameraWidth,CameraHeight);
     
    %3.4. Estimate Homography using RANSAC
-   [Homog BestConsensus] = RansacEstimation2(FinalPointsInImage, EquivGrid, 5, 200);
+   [Homog BestConsensus] = RansacEstimation3(FinalPointsInImage, EquivGrid, 2, 200);
    
    HomogData{i} = Homog;
 end

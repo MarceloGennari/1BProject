@@ -97,5 +97,6 @@ for k = 1:length(Index)
 end
     
 Homog = GetHomographyLSM(FourPoints, FourEquivPoints);
+fprintf('Using RansacEst 1\n');
 end
 

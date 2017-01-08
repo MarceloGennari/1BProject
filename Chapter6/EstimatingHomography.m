@@ -59,10 +59,10 @@ NoisyEquivGrid = [NoisyEquivGrid; ones(1,length(NoisyEquivGrid(1,:)))];
 
 %% 7. Add some outliers
 %This code adds some outliers in the (u,v) coordinates.
-FinalPointsInImage = ImplOutlier(NoisyPointsInImage,0.05,CameraWidth,CameraHeight);
+FinalPointsInImage = ImplOutlier(NoisyPointsInImage,0.1,CameraWidth,CameraHeight);
 
 %% 8. Find Best Estimation Homography using RANSAC approach
-[Homog BestConsensus] = RansacEstimation2(FinalPointsInImage, EquivGrid, 2, 2000);
+[Homog BestConsensus] = RansacEstimation3(FinalPointsInImage, EquivGrid, 2, 2000);
 
 FinalPoints = Homog*EquivGrid;
 s = size(FinalPoints);
