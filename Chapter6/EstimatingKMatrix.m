@@ -32,7 +32,7 @@ T_ow = PositionObject();
 %% 3. Images and Homography
 
 NumberImages = 6;
-HomogData = cell(NumberImages,1);
+HomogData = cell(NumberImages,3);
 
 for i = 1:NumberImages
     
@@ -46,15 +46,23 @@ for i = 1:NumberImages
    EquivGrid = [EquivalentGrid(1,:); EquivalentGrid(2,:); EquivalentGrid(4,:)];
    
    %3.2. Build some noise
-   [NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,3);
+   [NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,2);
 
    %3.3. Add some outliers
-   FinalPointsInImage = ImplOutlier(NoisyPointsInImage,0.05,CameraWidth,CameraHeight);
+   FinalPointsInImage = ImplOutlier(NoisyPointsInImage,0.1,CameraWidth,CameraHeight);
     
    %3.4. Estimate Homography using RANSAC
    [Homog BestConsensus] = RansacEstimation3(FinalPointsInImage, EquivGrid, 2, 200);
    
-   HomogData{i} = Homog;
+   Consensus = Homog*EquivGrid;
+   s = size(Consensus);
+   for j = 1:s(2)
+      Consensus(1:2,j)  = Consensus(1:2,j)/Consensus(3,j);
+   end
+   
+   HomogData{i,1} = Homog;
+   HomogData{i,2} = Consensus;
+   HomogData{i,3} = EquivGrid;
 end
 
 %% 4. Building Regressor
@@ -62,7 +70,7 @@ end
 %Building matrix A
 A = [];
 for i = 1:NumberImages
-   A = [A;getPsi(HomogData{i})]; 
+   A = [A;getPsi(HomogData{i,1})]; 
 end
 
 %Building Regressor using singular vector decomposition
@@ -80,4 +88,4 @@ InvK = chol(Phi);
 K = InvK\eye(3);
 K = K/K(3,3);
 
-
+K = OptimizeKMatrix(K, HomogData);

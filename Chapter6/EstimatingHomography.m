@@ -45,7 +45,7 @@ EquivGrid = [EquivalentGrid(1,:);EquivalentGrid(2,:);EquivalentGrid(4,:)];
 
 %% 6. Build some noise in the (u,v) and (x,y) coordinates
 %Build some noise
-[NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,5);
+[NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,1);
 
 %Calculate first attempt Homog Noisy Measurement using least square
 HomogNoisy = GetHomographyLSM(NoisyPointsInImage,NoisyEquivGrid);
@@ -59,10 +59,10 @@ NoisyEquivGrid = [NoisyEquivGrid; ones(1,length(NoisyEquivGrid(1,:)))];
 
 %% 7. Add some outliers
 %This code adds some outliers in the (u,v) coordinates.
-FinalPointsInImage = ImplOutlier(NoisyPointsInImage,0.1,CameraWidth,CameraHeight);
+FinalPointsInImage = ImplOutlier(NoisyPointsInImage,0.05,CameraWidth,CameraHeight);
 
 %% 8. Find Best Estimation Homography using RANSAC approach
-[Homog BestConsensus] = RansacEstimation3(FinalPointsInImage, EquivGrid, 2, 2000);
+[Homog BestConsensus] = RansacEstimation3(FinalPointsInImage, EquivGrid, 2, 100);
 
 FinalPoints = Homog*EquivGrid;
 s = size(FinalPoints);
@@ -73,11 +73,12 @@ end
 %% LAST. Plot everything in world coordinates and in camera view
 %Here we plot the Picture and make sure the axis goes from 0 to CamerHeigth
 %from the top to bottom using the axis ij command.
-plot(GridPointsInPhoto(1,:), GridPointsInPhoto(2,:),'r.');
+plot(FinalPointsInImage(1,:), FinalPointsInImage(2,:),'r.');
 hold on
 axis ij
 title('Picture taken by the camera');
 axis([0 CameraWidth 0 CameraHeight])
+plot(FinalPoints(1,:),FinalPoints(2,:),'g.');
 
 %plot in world reference frame
 figure

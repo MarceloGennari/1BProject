@@ -68,6 +68,7 @@ for j = 1:n
     %Calculating Consensus
     MatrixDiff = PointsInImage -Estimation;
     Consensus(j) = 0;
+    
 
     %This gets the (euclidean) distance difference between each two points:
     for i = 1:length(MatrixDiff(1,:))
@@ -97,8 +98,8 @@ Index = find(Consensus==BestConsensus);
 FourPoints = [];
 FourEquivPoints = [];
 for i = 1:4
-   FourPoints = [FourPoints PointsInImage(:,RandomPoints(i,Index))];
-   FourEquivPoints = [FourEquivPoints EquivGrid(:,RandomPoints(i,Index))];
+   FourPoints = [FourPoints PointsInImage(:,RandomPoints(i,Index(1)))];
+   FourEquivPoints = [FourEquivPoints EquivGrid(:,RandomPoints(i,Index(1)))];
 end
 
 %Output homography based on the best consensus

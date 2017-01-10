@@ -7,7 +7,7 @@ function [KMatrix, CameraHeight, CameraWidth ] = BuildCamera( )
 ChipSize = [500; 500];
 FocalLength = 35;
 EffectiveSize = [0.08; 0.08];
-Skewness = 0;
+Skewness = 0.01;
 PointsOffset = [0.5;0.5];
 
 % Getting the K Matrix and returing the camera heights and width
