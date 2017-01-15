@@ -1,4 +1,4 @@
-function [KMatrix ] = OptimizeKMatrix( K, Data )
+function [KMatrix ] = OptimizeKMatrix2( K, Data )
 %OPTIMIZEKMATRIX This function uses the Levenberg-Marquadt algorithm to
 %optimize the KMatrix model of the camera
 %   K is the first model of the camera, and Data is a Matlab cell
@@ -39,8 +39,6 @@ for n = 1:nImages
    
     %Extracting Homography from Data provided
     Homography = Data{n,1};
-    PointsEstimated = Data{n,2};
-    EquivGrid = Data{n,3};
     
     %Calculate modeled Perspectivity
     Perspectivity = K\ Homography;
@@ -134,7 +132,7 @@ for j = 1:nImages
     EquivGrid = Data{j,3};
         
     %Calculate the error vector e for each image
-    e = ComputeErrorVector(K, Axis,t, PointsInImage,EquivGrid);
+    e = ComputeErrorVector2(K, Axis,t, PointsInImage,EquivGrid);
     
     % Tranform from 2xnMeasurements to vector 2*nMeasurementsx1
     e = e(:);
@@ -143,7 +141,7 @@ for j = 1:nImages
     E0 = E0 + 0.5*(e'*e);
     
     % Computing the Jacobian
-    [ KMatJac, FrameJac ] = Jacobian(K, Axis, t, EquivGrid);
+    [ KMatJac, FrameJac ] = Jacobian2(K, Axis, t, EquivGrid);
     
     %Building Jacobian:
     J{j,1} = KMatJac;
@@ -167,7 +165,7 @@ for j = 1:nImages
 end
 
 %Initial Value of mu
-mu = max(diag(JTJ))*0.01;
+mu = max(diag(JTJ))*0.1;
 
 %Initial value of nu, which controls the rate of mu basically
 nu = 2;
@@ -187,14 +185,15 @@ while Searching == 1
       %Just to prevent infinite loops I guess
       
    end
+   
+   %Test for convergence
+    if norm(Gradient)/(5+6*nImages) < 0.001
+       break 
+    end
+    
     % using equtions from notes
     dp = -(JTJ + mu*eye(5+6*nImages))\Gradient;
     PredictedChange = Gradient'*dp;
-    norm(Gradient)/(5+6*nImages)
-    %Test for convergence
-    if norm(Gradient)/(5+6*nImages) < 10 || PredictedChange < 10^-5
-       break 
-    end
     
     %New parameters:
     KMatPerturbed = K;
@@ -205,8 +204,8 @@ while Searching == 1
     KMatPerturbed(1,3) = KMatPerturbed(1,3) + dp(3);
     KMatPerturbed(2,2) = KMatPerturbed(2,2) + dp(4);
     KMatPerturbed(2,3) = KMatPerturbed(2,3) + dp(5);
-        
-    KMatPerturbed;
+    
+    KMatPerturbed
     
     %Initialize the Error
     NewError = 0;
@@ -220,13 +219,13 @@ while Searching == 1
         FrameParametersPerturbed{j,2} = FrameParametersPerturbed{j,2} +dp(StartRow+3:StartRow+5);
         
         %Compute error
-         e = ComputeErrorVector(KMatPerturbed, FrameParametersPerturbed{j,1},FrameParametersPerturbed{j,2},PointsInImage,EquivGrid);
+         e = ComputeErrorVector2(KMatPerturbed, FrameParametersPerturbed{j,1},FrameParametersPerturbed{j,2},PointsInImage,EquivGrid);
          e = e(:);
          NewError = NewError+0.5*e'*e;
     end
     
     ChangeInError = NewError - CurrentError;
-    Gain = ChangeInError/PredictedChange;
+    Gain = ChangeInError/PredictedChange
     
     if ChangeInError>=0
         %Error has gone up
@@ -263,13 +262,13 @@ while Searching == 1
                 EquivGrid = Data{j,3};
 
                 %Calculate the error vector e for each image
-                e = ComputeErrorVector(K, Axis,t, PointsInImage,EquivGrid);
+                e = ComputeErrorVector2(K, Axis,t, PointsInImage,EquivGrid);
 
                 % Tranform from 2xnMeasurements to vector 2*nMeasurementsx1
                 e = e(:);
 
                 % Computing the Jacobian
-                [ KMatJac, FrameJac ] = Jacobian(K, Axis, t, EquivGrid);
+                [ KMatJac, FrameJac ] = Jacobian2(K, Axis, t, EquivGrid);
 
                 %Building Jacobian:
                 J{j,1} = KMatJac;
@@ -298,4 +297,5 @@ end
     
 KMatrix = K;
 end
+
 

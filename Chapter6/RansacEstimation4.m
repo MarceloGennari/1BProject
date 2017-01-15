@@ -1,4 +1,4 @@
-function [ Homog Consensus BestConsensus ] = RansacEstimation3(PointsInImage, EquivGrid, MaxError, n)
+function [ Homog Consensus BestConsensus ] = RansacEstimation4(PointsInImage, EquivGrid, MaxError, n)
 %RANSACESTIMATION This function implements the RANSAC algorithm to reject
 %outliers in the image.
 
@@ -60,13 +60,10 @@ for j = 1:n
 
     Estimation = Homography*EquivGrid;
     s = length(Estimation(1,:));
-    for k = 1:s
-       Estimation(1:2,k)  = Estimation(1:2,k)/Estimation(3,k);
-    end
     Estimation(3,:) = [];
     
     %Calculating Consensus
-    MatrixDiff = PointsInImage -Estimation;
+    MatrixDiff = PointsInImage(1:2,:) -Estimation(1:2,:);
     Consensus(j) = 0;
     
 
@@ -105,6 +102,7 @@ end
 %Output homography based on the best consensus
 Homog = GetHomographyLSM(FourPoints, FourEquivPoints);
 
-fprintf('Using RansacEst 3\n');
+fprintf('Using RansacEst 4\n');
 end
+
 

@@ -45,7 +45,7 @@ EquivGrid = [EquivalentGrid(1,:);EquivalentGrid(2,:);EquivalentGrid(4,:)];
 
 %% 6. Build some noise in the (u,v) and (x,y) coordinates
 %Build some noise
-[NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,1);
+[NoisyPointsInImage NoisyEquivGrid ] = BuildNoisyCorrespondence(GridPointsInPhoto, EquivalentGrid,0.5);
 
 %Calculate first attempt Homog Noisy Measurement using least square
 HomogNoisy = GetHomographyLSM(NoisyPointsInImage,NoisyEquivGrid);
@@ -61,42 +61,26 @@ NoisyEquivGrid = [NoisyEquivGrid; ones(1,length(NoisyEquivGrid(1,:)))];
 %This code adds some outliers in the (u,v) coordinates.
 FinalPointsInImage = ImplOutlier(NoisyPointsInImage,0.05,CameraWidth,CameraHeight);
 
-%% 8. Find Best Estimation Homography using RANSAC approach
-[Homog BestConsensus] = RansacEstimation3(FinalPointsInImage, EquivGrid, 2, 100);
+for k = 1:50
+    for i = 1:50
+        %% 8. Find Best Estimation Homography using RANSAC approach
+        [Homog Consensus BestConsensus] = RansacEstimation3(FinalPointsInImage, EquivGrid, 2, k);
 
-FinalPoints = Homog*EquivGrid;
-s = size(FinalPoints);
-for j = 1:s(2)
-   FinalPoints(1:2,j)  = FinalPoints(1:2,j)/FinalPoints(3,j);
+        FinalPoints = Homog*EquivGrid;
+        s = size(FinalPoints);
+        for j = 1:s(2)
+           FinalPoints(1:2,j)  = FinalPoints(1:2,j)/FinalPoints(3,j);
+        end
+
+        e = FinalPoints(1:2,:) - FinalPointsInImage(1:2,:);
+        e =e(:);
+        TotalE(1,i) = e'*e;
+        TotalE(2,i) = BestConsensus;
+    end
+    Statistics(1,k) = mean(TotalE(1,:));
+    Statistics(2,k) = mean(TotalE(2,:));
+    Statistics(3,k) = k;
 end
+TotalE(1,:) = log(TotalE(1,:));
 
-%% LAST. Plot everything in world coordinates and in camera view
-%Here we plot the Picture and make sure the axis goes from 0 to CamerHeigth
-%from the top to bottom using the axis ij command.
-subplot(1,3,1)
-plot(FinalPointsInImage(1,:), FinalPointsInImage(2,:),'r.');
-axis([0 CameraWidth 0 CameraHeight])
-axis ij
-axis square
-title('Noisy Image');
-
-subplot(1,3,2)
-plot(NewPoints(1,:),NewPoints(2,:),'b.');
-axis([0 CameraWidth 0 CameraHeight])
-axis ij
-axis square
-title('Points Estimated');
-
-subplot(1,3,3)
-plot(GridPointsInPhoto(1,:),GridPointsInPhoto(2,:),'b.');
-axis([0 CameraWidth 0 CameraHeight])
-axis ij
-axis square
-title('Actual Points');
-
-%plot in world reference frame
-%figure
-%plot3(GridW(1,:),GridW(2,:),GridW(3,:),'r.');
-%hold on
-%plot3(GridCornersW(1,:),GridCornersW(2,:),GridCornersW(3,:),'b.','markers',1);
-%PlottingCamera(T_cw);
+TotalE

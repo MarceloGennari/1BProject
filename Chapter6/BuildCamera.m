@@ -4,7 +4,7 @@ function [KMatrix, CameraHeight, CameraWidth ] = BuildCamera( )
 %numbers in here to make the SImulationTask1 cleaner and easier to read
 
 %  Defining the characteristics of the Camera:
-ChipSize = [500; 500];
+ChipSize = [200; 200];
 FocalLength = 35;
 EffectiveSize = [0.08; 0.08];
 Skewness = 0.01;

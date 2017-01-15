@@ -31,14 +31,16 @@ function [ KMatJac, FrameJac ] = Jacobian(KMatrix, Axis, Translation, EquivGrid 
 
 % So I will first transform everything to the form given in the notes:
 % First in case EquivGrid is not in Homogenous Coordinates:
-H = getHomography(KMatrix,Axis,Translation);
-EstimatedPoints = H*EquivGrid;
 
- s = size(EstimatedPoints);
-   for j = 1:s(2)
-      EstimatedPoints(:,j)  = EstimatedPoints(:,j)/EstimatedPoints(3,j);
-   end
-   
+if length(EquivGrid(:,1))<4
+   s = length(EquivGrid(1,:));
+   EquivGrid(4,:) = EquivGrid(3,:);
+   EquivGrid(3,:) =  zeros(1,s);
+end
+
+R = RodriguesMatrix2(Axis);
+EstimatedPoints = KMatrix*[eye(3) zeros(3,1)]*[R Translation; zeros(1,3) 1]*EquivGrid;
+
 EstimatedPoints = EstimatedPoints(1:2,:);
 
 % Here it transforms from a matrix of points to a vector
@@ -52,11 +54,11 @@ nImage = length(EquivGrid(1,:));
 % of magnitudes of disturbances, I will create a 5 cell with the
 % disturbance matrices in each of them:
 DisK = cell(5);
-diff(1) = KMatrix(1,1)*0.0001;
-diff(2) = KMatrix(1,2)*0.0001;
-diff(3) = KMatrix(1,3)*0.0001;
-diff(4) = KMatrix(2,2)*0.0001;
-diff(5) = KMatrix(2,3)*0.0001;
+diff(1) = KMatrix(1,1)*0.01;
+diff(2) = KMatrix(1,2)*0.01;
+diff(3) = KMatrix(1,3)*0.01;
+diff(4) = KMatrix(2,2)*0.01;
+diff(5) = KMatrix(2,3)*0.01;
 DisK{1} = [diff(1) 0 0; 0 0 0; 0 0 0];
 DisK{2} = [0 diff(2) 0; 0 0 0; 0 0 0];
 DisK{3} = [0 0 diff(3); 0 0 0; 0 0 0];
@@ -66,15 +68,8 @@ DisK{5} = [0 0 0; 0 0 diff(5); 0 0 0];
 for k = 1:5
     % Disturbing KMatrix:
     KDist = KMatrix + DisK{k};
+    EstPointsDist = KDist*[eye(3) zeros(3,1)]*[R Translation; zeros(1,3) 1]*EquivGrid;
     
-    H = getHomography(KDist,Axis,Translation);
-    EstPointsDist = H*EquivGrid;
-    
-       s = size(EstPointsDist);
-       for j = 1:s(2)
-          EstPointsDist(:,j)  = EstPointsDist(:,j)/EstPointsDist(3,j);
-       end
-   
     EstPointsDist = EstPointsDist(1:2,:);
     EstPointsDist = EstPointsDist(:);
     e = EstPointsDist-EstimatedPoints;
@@ -87,26 +82,23 @@ end
 %For the same reason I used for the KMatrix, I will create 2 a 3 cells with
 %disturbances
 AxisCell = cell(3);
-diff(1) = Axis(1)*0.000000001;
-diff(2) = Axis(2)*0.000000001;
-diff(3) = Axis(3)*0.000000001;
-AxisCell{1} = [diff(1); 0; 0];
-AxisCell{2} = [0; diff(2); 0];
-AxisCell{3} = [0; 0; diff(3)];
+diff(1) = Axis(1)*0.001;
+diff(2) = Axis(2)*0.001;
+diff(3) = Axis(3)*0.001;
+AxisCell{1} = [Axis(1)*0.001; 0; 0];
+AxisCell{2} = [0; Axis(2)*0.001; 0];
+AxisCell{3} = [0; 0; Axis(3)*0.001];
 
 for k = 1:3
     AxisD = Axis + AxisCell{k};
-
-    H = getHomography(KMatrix, AxisD, Translation);
+    %Creating Disturbed Rotation Matrix
+    RD = RodriguesMatrix2(AxisD);
+    %Building Homogeneous Transformation
+    RD = [RD Translation; zeros(1,3) 1];
     
     %Estimating transformed points
-    EstPointsDist =H*EquivGrid;
+    EstPointsDist = KMatrix*[eye(3) zeros(3,1)]*RD*EquivGrid;
     
-     s = size(EstPointsDist);
-       for j = 1:s(2)
-          EstPointsDist(1:2,j)  = EstPointsDist(1:2,j)/EstPointsDist(3,j);
-       end
-       
     EstPointsDist = EstPointsDist(1:2,:);
     EstPointsDist = EstPointsDist(:);
     e = EstPointsDist-EstimatedPoints;
@@ -115,27 +107,24 @@ for k = 1:3
 end
 
 TrCell = cell(3);
-diff(1) = Translation(1)*0.0001;
-diff(2) = Translation(2)*0.0001;
-diff(3) = Translation(3)*0.0001;
-TrCell{1} = [diff(1); 0; 0];
-TrCell{2} = [0; diff(2); 0];
-TrCell{3} = [0; 0; diff(3)];
+diff(1) = Translation(1)*0.01;
+diff(2) = Translation(2)*0.01;
+diff(3) = Translation(3)*0.01;
+TrCell{1} = [Translation(1)*0.01; 0; 0];
+TrCell{2} = [0; Translation(2)*0.01; 0];
+TrCell{3} = [0; 0; Translation(3)*0.01];
 
 for k = 1:3
     %Creating Disturbed Translation Vector
     TranslationD = Translation + TrCell{k};
     
-    H = getHomography(KMatrix,Axis,TranslationD);
+    R = RodriguesMatrix2(Axis);
+    
+    %Building Homogeneous Transformation
+    RD = [R TranslationD; zeros(1,3) 1];
     
     %Estimating transformed points
-    EstPointsDist = H*EquivGrid;
-    
-     s = size(EstPointsDist);
-     for j = 1:s(2)
-        EstPointsDist(:,j)  = EstPointsDist(:,j)/EstPointsDist(3,j);
-     end
-       
+    EstPointsDist = KMatrix*[eye(3) zeros(3,1)]*RD*EquivGrid;
     EstPointsDist = EstPointsDist(1:2,:);
     EstPointsDist = EstPointsDist(:);
 
